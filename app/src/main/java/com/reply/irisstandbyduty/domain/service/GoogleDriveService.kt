@@ -2,9 +2,6 @@ package com.reply.irisstandbyduty.domain.service
 
 import android.app.Activity
 import android.content.Intent
-import android.content.IntentSender
-import android.os.Environment
-import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,71 +11,62 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
-import com.google.android.gms.drive.*
-import com.reply.irisstandbyduty.domain.GoogleDriveConfig
+import com.google.api.client.extensions.android.http.AndroidHttp
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.drive.Drive
+import com.google.api.services.drive.DriveScopes
+import com.reply.irisstandbyduty.R
 import com.reply.irisstandbyduty.domain.ServiceListener
-import okio.buffer
-import okio.sink
-import okio.source
-import java.io.File
-import java.io.IOException
+import timber.log.Timber
+
 
 /**
  * Created by Reply on 01/08/21.
  */
 class GoogleDriveService(
     private val fragment: Fragment,
-    private val activity: Activity,
-    private val config: GoogleDriveConfig) {
-
-    companion object {
-        private val SCOPES = setOf<Scope>(Drive.SCOPE_FILE, Drive.SCOPE_APPFOLDER)
-        val documentMimeTypes = arrayListOf(
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/vnd.ms-excel"
-        )
-
-        const val REQUEST_CODE_OPEN_ITEM = 100
-        const val REQUEST_CODE_SIGN_IN = 101
-        const val TAG = "GoogleDriveService"
-    }
+    private val activity: Activity
+) {
 
     var serviceListener: ServiceListener? = null //1
-    private var driveClient: DriveClient? = null //2
-    private var driveResourceClient: DriveResourceClient? = null //3
-    private var signInAccount: GoogleSignInAccount? = null //4
 
-    val googleSignInClient: GoogleSignInClient by lazy {
-        val builder = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        for (scope in SCOPES) {
-            builder.requestScopes(scope)
-        }
-        val signInOptions = builder.build()
+    private var mSignInAccount: GoogleSignInAccount? = null //4
+
+    private val googleSignInClient: GoogleSignInClient by lazy {
+        val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .requestScopes(Scope(DriveScopes.DRIVE))
+            .build();
         GoogleSignIn.getClient(activity, signInOptions)
     }
 
     private val startForSignIn: ActivityResultLauncher<Intent>
     private val startForOpenItem: ActivityResultLauncher<IntentSenderRequest>
 
-    init {
-        startForSignIn = fragment.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            // Handle the returned result.
-            onSignInResult(
-                result.resultCode,
-                result.data)
-        }
+    private var mDriveServiceHelper: DriveServiceHelper? = null
 
-        startForOpenItem = fragment.registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-            // Handle the returned result.
-            onOpenItemResult(
-                result.resultCode,
-                result.data)
-        }
+    init {
+        startForSignIn =
+            fragment.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                // Handle the returned result.
+                onSignInResult(
+                    result.resultCode,
+                    result.data
+                )
+            }
+
+        startForOpenItem =
+            fragment.registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+                // Handle the returned result.
+                onOpenItemResult(
+                    result.resultCode,
+                    result.data
+                )
+            }
     }
 
-    fun onSignInResult(resultCode: Int, data: Intent?) {
+    private fun onSignInResult(resultCode: Int, data: Intent?) {
         if (data != null) {
             handleSignIn(data)
         } else {
@@ -86,43 +74,21 @@ class GoogleDriveService(
         }
     }
 
-    fun onOpenItemResult(resultCode: Int, data: Intent?) {
+    private fun onOpenItemResult(resultCode: Int, data: Intent?) {
         if (data != null) {
-            openItem(data)
+            //openItem(data)
         } else {
             serviceListener?.cancelled()
         }
     }
 
-    /**
-     * Prompts the user to select a text file using OpenFileActivity.
-     *
-     * @return Task that resolves with the selected item's ID.
-     */
-    fun pickFiles(driveId: DriveId?) {
-        val builder = OpenFileActivityOptions.Builder()
-        if (config.mimeTypes != null) {
-            builder.setMimeType(config.mimeTypes)
-        } else {
-            builder.setMimeType(documentMimeTypes)
-        }
-        if (config.activityTitle != null && config.activityTitle.isNotEmpty()) {
-            builder.setActivityTitle(config.activityTitle)
-        }
-        if (driveId != null) {
-            builder.setActivityStartFolder(driveId)
-        }
-        val openOptions = builder.build()
-        pickItem(openOptions)
-    }
 
     fun checkLoginStatus() {
         val requiredScopes = HashSet<Scope>(2)
-        requiredScopes.add(Drive.SCOPE_FILE)
-        requiredScopes.add(Drive.SCOPE_APPFOLDER)
-        signInAccount = GoogleSignIn.getLastSignedInAccount(activity)
-        val containsScope = signInAccount?.grantedScopes?.containsAll(requiredScopes)
-        val account = signInAccount
+        requiredScopes.add(Scope(DriveScopes.DRIVE_FILE))
+        mSignInAccount = GoogleSignIn.getLastSignedInAccount(activity)
+        val containsScope = mSignInAccount?.grantedScopes?.containsAll(requiredScopes)
+        val account = mSignInAccount
         if (account != null && containsScope == true) {
             initializeDriveClient(account)
         }
@@ -134,74 +100,70 @@ class GoogleDriveService(
 
     fun logout() {
         googleSignInClient.signOut()
-        signInAccount = null
+        mSignInAccount = null
+    }
+
+    fun createFile() {
+        val task = mDriveServiceHelper?.createFile()
+        task?.addOnSuccessListener {
+            Timber.d("Created file with id: $it")
+        }
+            ?.addOnFailureListener {
+                Timber.d("File creation failed")
+            }
+    }
+
+    fun downloadFileWithId(id: String) {
+        Timber.d("Logged in as ${mSignInAccount?.email}")
+        mDriveServiceHelper?.readAllFiles()
+        val task = mDriveServiceHelper?.readFile(id)
+        task
+            ?.addOnSuccessListener {
+                Timber.d("Downloaded file with name: ${it.first}")
+            }
+            ?.addOnFailureListener {
+                Timber.d("Error in download $it")
+            }
     }
 
 
+    /**
+     * Handles the {@code result} of a completed sign-in activity initiated from {@link
+     * #requestSignIn()}.
+     */
     private fun handleSignIn(data: Intent) {
-        val getAccountTask = GoogleSignIn.getSignedInAccountFromIntent(data)
-        if (getAccountTask.isSuccessful) {
-            initializeDriveClient(getAccountTask.result)
-        } else {
-            serviceListener?.handleError(Exception("Sign-in failed.", getAccountTask.exception))
-        }
+        GoogleSignIn.getSignedInAccountFromIntent(data)
+            .addOnSuccessListener { googleAccount: GoogleSignInAccount ->
+                Timber.d("Signed in as %s", googleAccount.email)
+                mSignInAccount = googleAccount
+                initializeDriveClient(googleAccount)
+            }
+            .addOnFailureListener { exception: Exception ->
+                Timber.e(exception, "Unable to sign in.")
+                serviceListener?.handleError(Exception("Sign-in failed.", exception))
+            }
     }
 
-    private fun initializeDriveClient(signInAccount: GoogleSignInAccount) {
-        driveClient = Drive.getDriveClient(activity.applicationContext, signInAccount)
-        driveResourceClient = Drive.getDriveResourceClient(activity.applicationContext, signInAccount)
+    private fun initializeDriveClient(googleAccount: GoogleSignInAccount) {
+        // Use the authenticated account to sign in to the Drive service.
+        val credential = GoogleAccountCredential.usingOAuth2(
+            activity,
+            setOf(DriveScopes.DRIVE_FILE)
+        )
+        credential.selectedAccount = googleAccount.account
+        val googleDriveService = Drive.Builder(
+            AndroidHttp.newCompatibleTransport(),
+            GsonFactory(),
+            credential
+        )
+            .setApplicationName(activity.resources.getString(R.string.app_name))
+            .build()
+
+        // The DriveServiceHelper encapsulates all REST API and SAF functionality.
+        // Its instantiation is required before handling any onClick actions.
+        mDriveServiceHelper = DriveServiceHelper(googleDriveService)
+
         serviceListener?.loggedIn()
-    }
-
-    private fun openItem(data: Intent) {
-        val driveId = data.getParcelableExtra<DriveId>(OpenFileActivityOptions.EXTRA_RESPONSE_DRIVE_ID)
-        downloadFile(driveId)
-    }
-
-    private fun downloadFile(data: DriveId?) {
-        if (data == null) {
-            Log.e(TAG, "downloadFile data is null")
-            return
-        }
-        val drive = data.asDriveFile()
-        var fileName = "test"
-        driveResourceClient?.getMetadata(drive)?.addOnSuccessListener {
-            fileName = it.originalFilename
-        }
-        val openFileTask = driveResourceClient?.openFile(drive, DriveFile.MODE_READ_ONLY)
-        openFileTask?.continueWithTask { task ->
-            val contents = task.result
-            contents.inputStream.use {
-                try {
-                    //This is the app's download directory, not the phones
-                    val storageDir = activity.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-                    val tempFile = File(storageDir, fileName)
-                    tempFile.createNewFile()
-                    val sink = tempFile.sink().buffer()
-                    sink.writeAll(it.source())
-                    sink.close()
-
-                    serviceListener?.fileDownloaded(tempFile)
-                } catch (e: IOException) {
-                    Log.e(TAG, "Problems saving file", e)
-                    serviceListener?.handleError(e)
-                }
-            }
-            driveResourceClient?.discardContents(contents)
-        }?.addOnFailureListener { e ->
-            // Handle failure
-            Log.e(TAG, "Unable to read contents", e)
-            serviceListener?.handleError(e)
-        }
-    }
-
-    private fun pickItem(openOptions: OpenFileActivityOptions) {
-        val openTask = driveClient?.newOpenFileActivityIntentSender(openOptions)
-        openTask?.let {
-            openTask.continueWith { task ->
-                //startForOpenItem.launch(task.result)
-            }
-        }
     }
 
 }

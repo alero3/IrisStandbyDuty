@@ -56,12 +56,7 @@ class HomeFragment : Fragment(), ServiceListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Creates the service with title and the document mime types.
-        val config = GoogleDriveConfig(
-            getString(R.string.source_google_drive),
-            GoogleDriveService.documentMimeTypes
-        )
-        googleDriveService = GoogleDriveService(this, requireActivity(), config)
+        googleDriveService = GoogleDriveService(this, requireActivity())
 
         // Set this as the listener.
         googleDriveService.serviceListener = this
@@ -73,7 +68,10 @@ class HomeFragment : Fragment(), ServiceListener {
             googleDriveService.auth()
         }
         binding.start.setOnClickListener {
-            googleDriveService.pickFiles(null)
+            googleDriveService.downloadFileWithId("273923671")
+        }
+        binding.createFile.setOnClickListener {
+            googleDriveService.createFile()
         }
         binding.logout.setOnClickListener {
             googleDriveService.logout()

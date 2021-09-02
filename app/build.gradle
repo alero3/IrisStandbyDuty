@@ -11,6 +11,10 @@ android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
 
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+    }
+
     defaultConfig {
         applicationId "com.reply.irisstandbyduty"
         minSdkVersion 21
@@ -63,9 +67,23 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.3.5'
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.5'
 
+    // Timber dependency.
+    implementation "com.jakewharton.timber:timber:$timberVersion"
+
     // Google Drive
     implementation "com.google.android.gms:play-services-auth:$play_services_version"
-    implementation "com.google.android.gms:play-services-drive:$play_services_version"
+
+    //Drive
+    implementation('com.google.api-client:google-api-client-android:1.26.0') {
+        exclude group: 'org.apache.httpcomponents'
+        exclude module: 'guava-jdk5'
+    }
+    implementation('com.google.apis:google-api-services-drive:v3-rev136-1.25.0') {
+        exclude group: 'org.apache.httpcomponents'
+        exclude module: 'guava-jdk5'
+    }
+
+    implementation 'com.google.http-client:google-http-client-gson:1.26.0'
     implementation 'com.squareup.okio:okio:2.2.2'
 
     testImplementation 'junit:junit:4.+'
