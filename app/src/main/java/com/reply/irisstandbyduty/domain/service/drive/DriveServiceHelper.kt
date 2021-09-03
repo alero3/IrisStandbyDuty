@@ -1,4 +1,4 @@
-package com.reply.irisstandbyduty.domain.service
+package com.reply.irisstandbyduty.domain.service.drive
 
 import android.content.ContentResolver
 import android.content.Intent
@@ -48,6 +48,30 @@ class DriveServiceHelper(private val mDriveService: Drive) {
      * Opens the file identified by `fileId` and returns a [Pair] of its name and
      * contents.
      */
+    fun exportFile(fileId: String?): Task<Pair<String, String>> {
+        return Tasks.call(mExecutor, Callable {
+            // Retrieve the metadata as a File object.
+            val export =
+                mDriveService.files().export(fileId, "text/csv")
+
+            export.executeMedia().content.use { inputStream ->
+                BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                    val stringBuilder = StringBuilder()
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        stringBuilder.append(line)
+                    }
+                    val contents = stringBuilder.toString()
+                    return@Callable Pair("", "")
+                }
+            }
+        })
+    }
+
+    /**
+     * Opens the file identified by `fileId` and returns a [Pair] of its name and
+     * contents.
+     */
     fun readFile(fileId: String?): Task<Pair<String, String>> {
         return Tasks.call(mExecutor, Callable {
             // Retrieve the metadata as a File object.
@@ -69,8 +93,9 @@ class DriveServiceHelper(private val mDriveService: Drive) {
         })
     }
 
+
     fun readAllFiles() {
-        Tasks.call(mExecutor, Callable {
+        Tasks.call(mExecutor, {
             // Print the names and IDs for up to 10 files.
             val result: FileList = mDriveService.files().list()
                 .setPageSize(10)
