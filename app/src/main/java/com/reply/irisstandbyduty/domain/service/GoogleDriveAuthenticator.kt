@@ -17,7 +17,7 @@ import timber.log.Timber
 /**
  * Created by Reply on 03/09/21.
  */
-abstract class GoogleDriveAuthenticator(
+class GoogleDriveAuthenticator(
     private val fragment: Fragment) {
 
     var serviceListener: ServiceListener? = null
@@ -25,9 +25,9 @@ abstract class GoogleDriveAuthenticator(
     private val context: Context
         get() = fragment.requireContext()
 
-    protected var mSignInAccount: GoogleSignInAccount? = null
+    private var mSignInAccount: GoogleSignInAccount? = null
 
-    protected val mScope = DriveScopes.DRIVE
+    private val mScope = DriveScopes.DRIVE
 
     private val googleSignInClient: GoogleSignInClient by lazy {
         val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -57,7 +57,7 @@ abstract class GoogleDriveAuthenticator(
         val containsScope = mSignInAccount?.grantedScopes?.containsAll(requiredScopes)
         val account = mSignInAccount
         if (account != null && containsScope == true) {
-            initializeClient(account)
+            serviceListener?.onLoginSuccess(account)
         }
     }
 
@@ -70,9 +70,6 @@ abstract class GoogleDriveAuthenticator(
         mSignInAccount = null
     }
 
-    protected abstract fun initializeClient(googleAccount: GoogleSignInAccount)
-
-
     /**
      * Handles the {@code result} of a completed sign-in activity initiated from {@link
      * #requestSignIn()}.
@@ -82,7 +79,7 @@ abstract class GoogleDriveAuthenticator(
             .addOnSuccessListener { googleAccount: GoogleSignInAccount ->
                 Timber.d("Signed in as %s", googleAccount.email)
                 mSignInAccount = googleAccount
-                initializeClient(googleAccount)
+                serviceListener?.onLoginSuccess(googleAccount)
             }
             .addOnFailureListener { exception: Exception ->
                 Timber.e(exception, "Unable to sign in.")

@@ -1,6 +1,6 @@
 package com.reply.irisstandbyduty.domain.service.sheets
 
-import androidx.fragment.app.Fragment
+import android.content.Context
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
@@ -8,45 +8,33 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.sheets.v4.Sheets
 import com.reply.irisstandbyduty.R
-import com.reply.irisstandbyduty.domain.service.GoogleDriveAuthenticator
 import timber.log.Timber
 import java.lang.Exception
 
-
 /**
- * Created by Reply on 01/08/21.
+ * Created by Reply on 04/09/21.
  */
-class SheetsService(
-    private val fragment: Fragment
-) : GoogleDriveAuthenticator(fragment) {
+class SheetsReader(
+    private val context: Context
+) {
 
-    private var mSpreadsheetServiceHelper: SheetsServiceHelper? = null
+    private val mScope = DriveScopes.DRIVE
+
+    private var mReadSheetCallback: ReadSheetCallback? = null
 
     fun readSheet(
+        googleAccount: GoogleSignInAccount,
         id: String,
         range: String,
         sheetName: String? = null,
         callback: ReadSheetCallback) {
-        Timber.d("Logged in as ${mSignInAccount?.email}")
-        val task = mSpreadsheetServiceHelper?.readSheet(id, "A1:AF16")
-        task?.addOnSuccessListener {
-            Timber.d("Sheet read success.")
-            callback.onSuccess(it)
-        }
-        task?.addOnFailureListener {
-            Timber.e(it, "Sheet read failed.")
-            callback.onFailure(it)
-        }
-        task?.addOnCanceledListener {
-            Timber.d("Sheet read canceled.")
-            callback.onCancel()
-        }
-    }
+        Timber.d("Logged in as ${googleAccount.email}")
 
-    override fun initializeClient(googleAccount: GoogleSignInAccount) {
+        mReadSheetCallback = callback
+
         // Use the authenticated account to sign in to the Drive service.
         val credential = GoogleAccountCredential.usingOAuth2(
-            fragment.requireContext(),
+            context,
             setOf(mScope)
         )
         credential.selectedAccount = googleAccount.account
@@ -55,16 +43,31 @@ class SheetsService(
             AndroidHttp.newCompatibleTransport(),
             GsonFactory(),
             credential)
-            .setApplicationName(fragment.requireContext().resources.getString(R.string.app_name))
+            .setApplicationName(context.resources.getString(R.string.app_name))
             .build()
 
         // The DriveServiceHelper encapsulates all REST API and SAF functionality.
         // Its instantiation is required before handling any onClick actions.
-        mSpreadsheetServiceHelper = SheetsServiceHelper(sheetsService)
+        val mSpreadsheetServiceHelper = SheetsServiceHelper(sheetsService)
 
-        serviceListener?.onLoginSuccess()
+        val task = mSpreadsheetServiceHelper.readSheet(id, range)
+        task.addOnSuccessListener {
+            Timber.d("Sheet read success.")
+            mReadSheetCallback?.onSuccess(it)
+        }
+        task.addOnFailureListener {
+            Timber.e(it, "Sheet read failed.")
+            mReadSheetCallback?.onFailure(it)
+        }
+        task.addOnCanceledListener {
+            Timber.d("Sheet read canceled.")
+            mReadSheetCallback?.onCancel()
+        }
     }
 
+    fun unregisterReadSheetCallback() {
+        mReadSheetCallback = null
+    }
 }
 
 interface ReadSheetCallback {

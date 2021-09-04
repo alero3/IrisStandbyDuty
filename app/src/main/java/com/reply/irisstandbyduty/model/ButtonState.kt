@@ -1,4 +1,4 @@
-package com.reply.irisstandbyduty.ui.home
+package com.reply.irisstandbyduty.model
 
 /**
  * Created by Reply on 02/08/21.

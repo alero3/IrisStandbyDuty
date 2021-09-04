@@ -5,16 +5,24 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.material.snackbar.Snackbar
 import com.reply.irisstandbyduty.R
 import com.reply.irisstandbyduty.databinding.FragmentHomeBinding
+import com.reply.irisstandbyduty.domain.MonthParser
 import com.reply.irisstandbyduty.domain.ServiceListener
-import com.reply.irisstandbyduty.domain.service.sheets.ReadSheetCallback
-import com.reply.irisstandbyduty.domain.service.sheets.SheetsService
+import com.reply.irisstandbyduty.domain.StandbyDutyCalendarParser
+import com.reply.irisstandbyduty.domain.service.GoogleDriveAuthenticator
+import com.reply.irisstandbyduty.domain.service.sheets.SheetsReader
+import com.reply.irisstandbyduty.domain.usecase.LoadOnCallCalendarUseCase
+import com.reply.irisstandbyduty.model.ButtonState
+import com.reply.irisstandbyduty.ui.MyViewModelFactory
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import timber.log.Timber
 
 class HomeFragment : Fragment(), ServiceListener {
 
@@ -25,7 +33,7 @@ class HomeFragment : Fragment(), ServiceListener {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private lateinit var sheetsService: SheetsService
+    private lateinit var googleDriveAuthenticator: GoogleDriveAuthenticator
 
     private var state = ButtonState.LOGGED_OUT
 
@@ -34,35 +42,40 @@ class HomeFragment : Fragment(), ServiceListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        homeViewModel =
-            ViewModelProvider(this).get(HomeViewModel::class.java)
+        homeViewModel = ViewModelProvider(this, MyViewModelFactory(
+            loadOnCallCalendarUseCase = LoadOnCallCalendarUseCase(
+                calendarParser = StandbyDutyCalendarParser(monthParser = MonthParser()),
+                sheetsReader = SheetsReader(context = requireContext()),
+                coroutineDispatcher = Dispatchers.IO
+            )
+
+        )).get(HomeViewModel::class.java)
+
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        val root: View = binding.root
 
-        val textView: TextView = binding.textHome
-        homeViewModel.text.observe(viewLifecycleOwner, Observer {
-            textView.text = it
-        })
-        return root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        sheetsService = SheetsService(this)
+        setupObserver()
+
+        googleDriveAuthenticator = GoogleDriveAuthenticator(this)
 
         // Set this as the listener.
-        sheetsService.serviceListener = this
+        googleDriveAuthenticator.serviceListener = this
 
         // Change the state to logged-in if there is any logged-in account present.
-        sheetsService.checkLoginStatus()
+        googleDriveAuthenticator.checkLoginStatus()
 
         binding.login.setOnClickListener {
-            sheetsService.auth()
+            googleDriveAuthenticator.auth()
         }
+
         binding.start.setOnClickListener {
-            sheetsService.readSheet(
+            /*sheetsService.readSheet(
                 id = "1s4igidc3c3z5u6fNSWc7Dwsyz1lObUC3KptXaDYH38A",
                 range = "A1:AF16",
                 sheetName = null,
@@ -78,11 +91,11 @@ class HomeFragment : Fragment(), ServiceListener {
 
                     }
                 }
-            )
+            )*/
         }
 
         binding.logout.setOnClickListener {
-            sheetsService.logout()
+            googleDriveAuthenticator.logout()
             state = ButtonState.LOGGED_OUT
             setButtons()
         }
@@ -97,9 +110,10 @@ class HomeFragment : Fragment(), ServiceListener {
         _binding = null
     }
 
-    override fun onLoginSuccess() {
+    override fun onLoginSuccess(googleAccont: GoogleSignInAccount) {
         state = ButtonState.LOGGED_IN
         setButtons()
+        homeViewModel.setLoggedInUser(googleAccont)
     }
 
     override fun onLoginCancel() {
@@ -128,6 +142,28 @@ class HomeFragment : Fragment(), ServiceListener {
                 binding.login.isEnabled = false
             }
         }
+    }
+
+    private fun setupObserver() {
+        homeViewModel.uiState.observe(viewLifecycleOwner, Observer {
+            Timber.d("State update: $it")
+
+            when (it) {
+                is UiState.OnCallEmployee -> {
+
+                }
+                is UiState.Loading -> {
+
+                }
+                is UiState.LoggedIn -> {
+                    homeViewModel.loadCurrentOnCallEmployee(it.googleAccount)
+                }
+                is UiState.NotLoggedIn -> {
+
+                }
+            }
+        })
+
     }
 
 }
