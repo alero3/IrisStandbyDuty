@@ -3,6 +3,8 @@ plugins {
     id 'kotlin-android'
 }
 
+apply plugin: 'com.google.gms.google-services'
+
 ext {
     play_services_version = "15.0.1"
 }
@@ -89,8 +91,15 @@ dependencies {
         exclude module: 'guava-jdk5'
     }
 
+    // Firebase BOM
+    implementation platform('com.google.firebase:firebase-bom:28.4.0')
+    // Cloud Storage library
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation 'com.google.firebase:firebase-storage'
+
     implementation 'com.google.http-client:google-http-client-gson:1.26.0'
     implementation 'com.squareup.okio:okio:2.2.2'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

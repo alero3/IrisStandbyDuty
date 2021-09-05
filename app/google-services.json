@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "43782752926",
+    "project_id": "irisstandyduty",
+    "storage_bucket": "irisstandyduty.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:43782752926:android:92c55f9b24cf120dcac98f",
+        "android_client_info": {
+          "package_name": "com.reply.irisstandbyduty"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "43782752926-21fdqafb64i83lb7e5ls3tc7hjiuekjf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.reply.irisstandbyduty",
+            "certificate_hash": "cc2df8281976f61b60febf2ffe37e38b4a374b9c"
+          }
+        },
+        {
+          "client_id": "43782752926-covrl0lsg49nq2i4hl2him2kp0sg2c3d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNtvmgC-esgH6qfnZLN-FJSXWo-J7V-bw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "43782752926-covrl0lsg49nq2i4hl2him2kp0sg2c3d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
