@@ -79,7 +79,9 @@ class HomeFragment : Fragment() {
                     pictureLocation.downloadUrl
                         .addOnSuccessListener { uri ->
                             val imageURL = uri.toString()
-                            Glide.with(requireContext()).load(imageURL)
+                            Glide.with(requireContext())
+                                .load(imageURL)
+                                .circleCrop()
                                 .into(binding.profilePictureImageView)
                         }.addOnFailureListener { e ->
                             // Handle any errors

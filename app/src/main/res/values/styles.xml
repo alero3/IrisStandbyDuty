@@ -1,9 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Widget.IOSched.AppBar" parent="@style/Widget.Design.AppBarLayout">
+    <style name="Widget.IrisStandbyDuty.AppBar" parent="@style/Widget.Design.AppBarLayout">
         <item name="android:background">?attr/colorSurface</item>
         <item name="android:elevation">8dp</item>
+    </style>
+
+    <style name="TextAppearance.IrisStandbyDuty.ListPrimary" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:fontFamily">@font/google_sans_medium</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="fontFamily">@font/google_sans_medium</item>
+    </style>
+
+    <!-- List item primary text, e.g. event titles, codelab titles -->
+    <style name="TextAppearance.IrisStandbyDuty.Body1" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:fontFamily">@font/google_sans_medium</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textSize" tools:ignore="SpUsage">16dp</item>
+        <item name="fontFamily">@font/google_sans_medium</item>
+    </style>
+
+    <style name="TextAppearance.IrisStandbyDuty.HeaderMedium" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:fontFamily">@font/google_sans_medium</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textSize" tools:ignore="SpUsage">22dp</item>
+        <item name="fontFamily">@font/google_sans_medium</item>
+    </style>
+
+    <style name="TextAppearance.IrisStandbyDuty.HeaderBig" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:fontFamily">@font/google_sans_medium</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textSize" tools:ignore="SpUsage">24dp</item>
+        <item name="fontFamily">@font/google_sans_medium</item>
+    </style>
+
+    <style name="TextAppearance.IrisStandbyDuty.HeaderBig.Overline" parent="TextAppearance.IrisStandbyDuty.HeaderBig">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.IrisStandbyDuty.ToolbarTitle" parent="@style/TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:fontFamily">@font/google_sans</item>
+        <item name="android:textSize" tools:ignore="SpUsage">20dp</item>
     </style>
 
 </resources>
