@@ -8,9 +8,9 @@ import java.util.*
 
 /**
  * @param month
- * @param onCallCalendar map that associates each day to the person on call for that day.
+ * @param onCallCalendar map that associates each day to the name of the person on call for that day.
  */
 data class StandbyDutyMonth(
     val month: Int,
-    val onCallCalendar: Map<Date, String>
+    val onCallCalendar: SortedMap<Date, String>
 )

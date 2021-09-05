@@ -2,28 +2,30 @@ package com.reply.irisstandbyduty.domain.service
 
 import android.content.Context
 import android.content.Intent
+import androidx.activity.result.ActivityResultCaller
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.fragment.app.Fragment
+import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
 import com.google.api.services.drive.DriveScopes
-import com.reply.irisstandbyduty.domain.ServiceListener
+import com.reply.irisstandbyduty.domain.AuthenticationListener
 import timber.log.Timber
+import java.lang.RuntimeException
 
 /**
  * Created by Reply on 03/09/21.
  */
-class GoogleDriveAuthenticator(
-    private val fragment: Fragment) {
-
-    var serviceListener: ServiceListener? = null
-
+class GoogleDriveAuthenticator constructor(
     private val context: Context
-        get() = fragment.requireContext()
+) {
+
+    var authenticationListener: AuthenticationListener? = null
+
+    private var activityResultCaller: ActivityResultCaller? = null
 
     private var mSignInAccount: GoogleSignInAccount? = null
 
@@ -40,14 +42,19 @@ class GoogleDriveAuthenticator(
     private val startForSignIn: ActivityResultLauncher<Intent>
 
     init {
-        startForSignIn =
-            fragment.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                // Handle the returned result.
-                onSignInResult(
-                    result.resultCode,
-                    result.data
-                )
-            }
+        if (context is ActivityResultCaller) {
+            activityResultCaller = context
+            startForSignIn =
+                activityResultCaller!!.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                    // Handle the returned result.
+                    onSignInResult(
+                        result.resultCode,
+                        result.data
+                    )
+                }
+        } else {
+            throw RuntimeException("context passed to ${GoogleDriveAuthenticator::class.java.simpleName} must implement ${ActivityResultCaller::class.java.simpleName}")
+        }
     }
 
     fun checkLoginStatus() {
@@ -57,7 +64,9 @@ class GoogleDriveAuthenticator(
         val containsScope = mSignInAccount?.grantedScopes?.containsAll(requiredScopes)
         val account = mSignInAccount
         if (account != null && containsScope == true) {
-            serviceListener?.onLoginSuccess(account)
+            authenticationListener?.onLoginSuccess(account)
+        } else {
+            authenticationListener?.onLoginNotPerformed()
         }
     }
 
@@ -79,11 +88,11 @@ class GoogleDriveAuthenticator(
             .addOnSuccessListener { googleAccount: GoogleSignInAccount ->
                 Timber.d("Signed in as %s", googleAccount.email)
                 mSignInAccount = googleAccount
-                serviceListener?.onLoginSuccess(googleAccount)
+                authenticationListener?.onLoginSuccess(googleAccount)
             }
             .addOnFailureListener { exception: Exception ->
                 Timber.e(exception, "Unable to sign in.")
-                serviceListener?.onLoginError(Exception("Sign-in failed.", exception))
+                authenticationListener?.onLoginError(Exception("Sign-in failed.", exception))
             }
     }
 
@@ -91,7 +100,7 @@ class GoogleDriveAuthenticator(
         if (data != null) {
             handleSignIn(data)
         } else {
-            serviceListener?.onLoginCancel()
+            authenticationListener?.onLoginCancel()
         }
     }
 }

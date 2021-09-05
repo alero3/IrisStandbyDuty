@@ -7,6 +7,11 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 
+
+    <string name="nav_action_schedule">Schedule</string>
+    <string name="nav_action_home">Home</string>
+    <string name="nav_action_settings">Settings</string>
+
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
@@ -17,7 +22,10 @@
     <string name="logout">Log Out</string>
     <string name="status_logged_out">Logged Out</string>
     <string name="status_logged_in">Logged In</string>
+    <string name="status_not_logged_in">Not Logged In</string>
     <string name="status_user_cancelled">User Cancelled</string>
     <string name="status_error">We found a problem: %1$s</string>
     <string name="not_open_file">Could not open file</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

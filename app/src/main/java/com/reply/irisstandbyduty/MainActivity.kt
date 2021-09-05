@@ -1,24 +1,31 @@
 package com.reply.irisstandbyduty
 
-import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
-import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.navigation.NavigationView
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.reply.irisstandbyduty.databinding.ActivityMainBinding
 import timber.log.Timber
+import android.view.Menu
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import android.view.MenuItem
+import androidx.lifecycle.ViewModelProvider
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.material.snackbar.Snackbar
+import com.reply.irisstandbyduty.domain.AuthenticationListener
+import com.reply.irisstandbyduty.domain.service.GoogleDriveAuthenticator
+import com.reply.irisstandbyduty.ui.LoginViewModelFactory
+import com.reply.irisstandbyduty.ui.login.LoginState
+import com.reply.irisstandbyduty.ui.login.LoginViewModel
 
-class MainActivity : AppCompatActivity() {
 
-    private lateinit var appBarConfiguration: AppBarConfiguration
+class MainActivity : AppCompatActivity(), AuthenticationListener {
+
     private lateinit var binding: ActivityMainBinding
+
+    private lateinit var loginViewModel: LoginViewModel
+
+    private lateinit var navController: NavController
+    private lateinit var navHostFragment: NavHostFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,34 +35,76 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.appBarMain.toolbar)
+        navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
 
-        binding.appBarMain.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
-        val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navView: NavigationView = binding.navView
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow
-            ), drawerLayout
-        )
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+        navController = navHostFragment.navController
+
+        val googleDriveAuthenticator = GoogleDriveAuthenticator(this)
+        // Set this as the listener.
+        googleDriveAuthenticator.authenticationListener = this
+
+        // Create ViewModel.
+        loginViewModel = ViewModelProvider(
+            this, LoginViewModelFactory(
+                googleDriveAuthenticator
+            )
+        ).get(LoginViewModel::class.java)
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.main, menu)
+        val inflater = menuInflater
+        inflater.inflate(R.menu.toolbar_menu, menu)
         return true
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+            R.id.action_profile -> {
+                // Clicked Profile item.
+                //addSomething()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
+
+    override fun onLoginSuccess(googleAccont: GoogleSignInAccount) {
+        Snackbar.make(binding.root, R.string.status_logged_in, Snackbar.LENGTH_LONG).show()
+        loginViewModel.setAuthenticationStatus(
+            LoginState.LoggedIn(googleAccont)
+        )
+    }
+
+    override fun onLoginNotPerformed() {
+        Snackbar.make(binding.root, R.string.status_not_logged_in, Snackbar.LENGTH_LONG).show()
+        loginViewModel.setAuthenticationStatus(
+            LoginState.NotLoggedIn
+        )
+    }
+
+    override fun onLoginCancel() {
+        Snackbar.make(binding.root, R.string.status_user_cancelled, Snackbar.LENGTH_LONG).show()
+        loginViewModel.setAuthenticationStatus(
+            LoginState.NotLoggedIn
+        )
+    }
+
+    override fun onLoginError(exception: Exception) {
+        Timber.e(exception, "error in login")
+        val errorMessage = getString(R.string.status_error, exception.message)
+        Snackbar.make(binding.root, errorMessage, Snackbar.LENGTH_LONG).show()
+        loginViewModel.setAuthenticationStatus(
+            LoginState.LoginError(exception)
+        )
+    }
+
+    fun login() {
+    }
+
+    fun logout() {
+    }
+
 }

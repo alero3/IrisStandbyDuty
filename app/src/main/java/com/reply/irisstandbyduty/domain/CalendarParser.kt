@@ -17,7 +17,7 @@ class StandbyDutyCalendarParser constructor(
         val monthParsing = monthParser.parse(monthString)
         val month = monthParsing.first
         val year = monthParsing.second
-        val onCallCalendarMap: MutableMap<Date, String> = mutableMapOf()
+        val onCallCalendarMap: SortedMap<Date, String> = sortedMapOf()
 
         // Row index of the first Android person is 6.
         // There are 5 Android people.
