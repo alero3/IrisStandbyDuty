@@ -12,12 +12,19 @@
         <item name="fontFamily">@font/google_sans_medium</item>
     </style>
 
-    <!-- List item primary text, e.g. event titles, codelab titles -->
     <style name="TextAppearance.IrisStandbyDuty.Body1" parent="TextAppearance.MaterialComponents.Body1">
         <item name="android:fontFamily">@font/google_sans_medium</item>
         <item name="android:letterSpacing">0</item>
-        <item name="android:textSize" tools:ignore="SpUsage">16dp</item>
+        <item name="android:textSize" tools:ignore="SpUsage">22dp</item>
         <item name="fontFamily">@font/google_sans_medium</item>
+    </style>
+
+    <style name="TextAppearance.IrisStandbyDuty.Body1.Overline" parent="TextAppearance.IrisStandbyDuty.Body1">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.IrisStandbyDuty.Body2" parent="TextAppearance.IrisStandbyDuty.Body1">
+        <item name="android:textSize" tools:ignore="SpUsage">14dp</item>
     </style>
 
     <style name="TextAppearance.IrisStandbyDuty.HeaderMedium" parent="TextAppearance.MaterialComponents.Body1">

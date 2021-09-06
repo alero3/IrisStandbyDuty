@@ -9,11 +9,11 @@
 
 
     <string name="nav_action_schedule">Schedule</string>
-    <string name="nav_action_home">Home</string>
+    <string name="nav_action_today">Today</string>
     <string name="nav_action_settings">Settings</string>
 
     <string name="menu_home">Home</string>
-    <string name="menu_gallery">Gallery</string>
+    <string name="menu_schedule">Schedule</string>
     <string name="menu_slideshow">Slideshow</string>
 
     <string name="source_google_drive">Google Drive</string>
@@ -28,4 +28,28 @@
     <string name="not_open_file">Could not open file</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
+    <string name="day_of_week_1">DOM</string>
+    <string name="day_of_week_2">LUN</string>
+    <string name="day_of_week_3">MAR</string>
+    <string name="day_of_week_4">MER</string>
+    <string name="day_of_week_5">GIO</string>
+    <string name="day_of_week_6">VEN</string>
+    <string name="day_of_week_7">SAB</string>
+
+    <string name="month_1">Gennaio</string>
+    <string name="month_2">Febbraio</string>
+    <string name="month_3">Marzo</string>
+    <string name="month_4">Aprile</string>
+    <string name="month_5">Maggio</string>
+    <string name="month_6">Giugno</string>
+    <string name="month_7">Luglio</string>
+    <string name="month_8">Agosto</string>
+    <string name="month_9">Settembre</string>
+    <string name="month_10">Ottobre</string>
+    <string name="month_11">Novembre</string>
+    <string name="month_12">Dicembre</string>
+
+
 </resources>

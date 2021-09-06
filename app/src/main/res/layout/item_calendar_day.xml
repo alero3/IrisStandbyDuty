@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="shift"
+            type="com.reply.irisstandbyduty.model.Shift"
+             />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/dayOfWeekTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.IrisStandbyDuty.Body2"
+            android:textColor="?attr/colorPrimary"
+            app:layout_constraintBottom_toTopOf="@id/dayNumberTextView"
+            app:layout_constraintEnd_toEndOf="@id/separatorLeft"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="VEN"
+            />
+
+        <TextView
+            android:id="@+id/dayNumberTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textAppearance="@style/TextAppearance.IrisStandbyDuty.Body1.Overline"
+            android:textColor="?attr/colorPrimary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/separatorLeft"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/dayOfWeekTextView"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="25" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/separatorLeft"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent=".2" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/separatorRight"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent=".8" />
+
+        <TextView
+            android:id="@+id/nameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:textAppearance="@style/TextAppearance.IrisStandbyDuty.HeaderBig"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/separatorLeft"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Nome Cognome" />
+
+        <TextView
+            android:id="@+id/overtimeStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.IrisStandbyDuty.Body1.Overline"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/separatorRight"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="RL 1"
+            tools:visibility="visible" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

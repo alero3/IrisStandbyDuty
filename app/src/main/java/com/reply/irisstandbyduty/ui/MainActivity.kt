@@ -49,6 +49,22 @@ class MainActivity :
         googleDriveAuthenticator = GoogleDriveAuthenticator(this)
         // Set this as the listener.
         googleDriveAuthenticator?.authenticationResultListener = this
+
+        binding.bottomNavigation.selectedItemId = R.id.bottom_nav_item_today
+        binding.bottomNavigation.setOnItemSelectedListener {
+            when (it.itemId) {
+                R.id.bottom_nav_item_today -> {
+                    navController.navigate(R.id.nav_home)
+                }
+                R.id.bottom_nav_item_schedule -> {
+                    navController.navigate(R.id.nav_schedule)
+                }
+                R.id.bottom_nav_item_settings -> {
+
+                }
+            }
+            true
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -70,7 +86,7 @@ class MainActivity :
     }
 
     override fun onLoginSuccess(googleAccont: GoogleSignInAccount) {
-        Snackbar.make(binding.root, R.string.status_logged_in, Snackbar.LENGTH_LONG).show()
+        //Snackbar.make(binding.root, R.string.status_logged_in, Snackbar.LENGTH_LONG).show()
         loginViewModel.setAuthenticationStatus(
             LoginState.LoggedIn(googleAccont)
         )
