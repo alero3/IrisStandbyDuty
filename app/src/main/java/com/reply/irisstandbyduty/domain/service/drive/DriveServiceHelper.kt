@@ -18,13 +18,14 @@ import java.lang.StringBuilder
 import java.util.concurrent.Callable
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import javax.inject.Inject
 
 
 /**
  * A utility for performing read/write operations on Drive files via the REST API and opening a
  * file picker UI via Storage Access Framework.
  */
-class DriveServiceHelper(private val mDriveService: Drive) {
+class DriveServiceHelper @Inject constructor(private val mDriveService: Drive) {
     private val mExecutor: Executor = Executors.newSingleThreadExecutor()
 
     /**

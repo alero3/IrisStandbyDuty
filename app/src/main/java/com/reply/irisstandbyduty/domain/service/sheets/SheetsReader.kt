@@ -8,14 +8,16 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.sheets.v4.Sheets
 import com.reply.irisstandbyduty.R
+import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
 import java.lang.Exception
+import javax.inject.Inject
 
 /**
  * Created by Reply on 04/09/21.
  */
-class SheetsReader(
-    private val context: Context
+class SheetsReader @Inject constructor(
+    @ApplicationContext private val context: Context
 ) {
 
     private val mScope = DriveScopes.DRIVE

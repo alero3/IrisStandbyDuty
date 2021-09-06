@@ -5,25 +5,25 @@ import android.content.Intent
 import androidx.activity.result.ActivityResultCaller
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
 import com.google.api.services.drive.DriveScopes
-import com.reply.irisstandbyduty.domain.AuthenticationListener
+import com.reply.irisstandbyduty.domain.AuthenticationResultListener
 import timber.log.Timber
 import java.lang.RuntimeException
+import javax.inject.Inject
 
 /**
  * Created by Reply on 03/09/21.
  */
-class GoogleDriveAuthenticator constructor(
+class GoogleDriveAuthenticator @Inject constructor(
     private val context: Context
 ) {
 
-    var authenticationListener: AuthenticationListener? = null
+    var authenticationResultListener: AuthenticationResultListener? = null
 
     private var activityResultCaller: ActivityResultCaller? = null
 
@@ -64,9 +64,9 @@ class GoogleDriveAuthenticator constructor(
         val containsScope = mSignInAccount?.grantedScopes?.containsAll(requiredScopes)
         val account = mSignInAccount
         if (account != null && containsScope == true) {
-            authenticationListener?.onLoginSuccess(account)
+            authenticationResultListener?.onLoginSuccess(account)
         } else {
-            authenticationListener?.onLoginNotPerformed()
+            authenticationResultListener?.onLoginNotPerformed()
         }
     }
 
@@ -88,11 +88,11 @@ class GoogleDriveAuthenticator constructor(
             .addOnSuccessListener { googleAccount: GoogleSignInAccount ->
                 Timber.d("Signed in as %s", googleAccount.email)
                 mSignInAccount = googleAccount
-                authenticationListener?.onLoginSuccess(googleAccount)
+                authenticationResultListener?.onLoginSuccess(googleAccount)
             }
             .addOnFailureListener { exception: Exception ->
                 Timber.e(exception, "Unable to sign in.")
-                authenticationListener?.onLoginError(Exception("Sign-in failed.", exception))
+                authenticationResultListener?.onLoginError(Exception("Sign-in failed.", exception))
             }
     }
 
@@ -100,7 +100,7 @@ class GoogleDriveAuthenticator constructor(
         if (data != null) {
             handleSignIn(data)
         } else {
-            authenticationListener?.onLoginCancel()
+            authenticationResultListener?.onLoginCancel()
         }
     }
 }

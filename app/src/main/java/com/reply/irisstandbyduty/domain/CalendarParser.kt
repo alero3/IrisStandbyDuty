@@ -2,12 +2,13 @@ package com.reply.irisstandbyduty.domain
 
 import com.reply.irisstandbyduty.model.StandbyDutyMonth
 import java.util.*
+import javax.inject.Inject
 import kotlin.collections.ArrayList
 
 /**
  * Created by Reply on 03/09/21.
  */
-class StandbyDutyCalendarParser constructor(
+class StandbyDutyCalendarParser @Inject constructor(
     private val monthParser: MonthParser
 ) {
 

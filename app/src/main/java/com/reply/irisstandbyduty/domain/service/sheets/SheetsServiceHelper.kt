@@ -8,11 +8,12 @@ import timber.log.Timber
 import java.util.concurrent.Callable
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import javax.inject.Inject
 
 /**
  * Created by Reply on 03/09/21.
  */
-class SheetsServiceHelper(
+class SheetsServiceHelper @Inject constructor(
     private val sheetsService: Sheets
 ) {
     private val mExecutor: Executor = Executors.newSingleThreadExecutor()

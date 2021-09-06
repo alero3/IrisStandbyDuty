@@ -1,4 +1,4 @@
-package com.reply.irisstandbyduty
+package com.reply.irisstandbyduty.ui
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -8,29 +8,35 @@ import android.view.Menu
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import android.view.MenuItem
-import androidx.lifecycle.ViewModelProvider
+import androidx.activity.viewModels
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.material.snackbar.Snackbar
-import com.reply.irisstandbyduty.domain.AuthenticationListener
+import com.reply.irisstandbyduty.R
+import com.reply.irisstandbyduty.domain.AuthenticationManager
+import com.reply.irisstandbyduty.domain.AuthenticationResultListener
 import com.reply.irisstandbyduty.domain.service.GoogleDriveAuthenticator
-import com.reply.irisstandbyduty.ui.LoginViewModelFactory
 import com.reply.irisstandbyduty.ui.login.LoginState
 import com.reply.irisstandbyduty.ui.login.LoginViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 
-class MainActivity : AppCompatActivity(), AuthenticationListener {
+@AndroidEntryPoint
+class MainActivity :
+    AppCompatActivity(),
+    AuthenticationResultListener,
+    AuthenticationManager {
 
     private lateinit var binding: ActivityMainBinding
 
-    private lateinit var loginViewModel: LoginViewModel
+    private val loginViewModel: LoginViewModel by viewModels()
 
     private lateinit var navController: NavController
     private lateinit var navHostFragment: NavHostFragment
 
+    private var googleDriveAuthenticator: GoogleDriveAuthenticator? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        Timber.plant(Timber.DebugTree())
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -40,17 +46,9 @@ class MainActivity : AppCompatActivity(), AuthenticationListener {
 
         navController = navHostFragment.navController
 
-        val googleDriveAuthenticator = GoogleDriveAuthenticator(this)
+        googleDriveAuthenticator = GoogleDriveAuthenticator(this)
         // Set this as the listener.
-        googleDriveAuthenticator.authenticationListener = this
-
-        // Create ViewModel.
-        loginViewModel = ViewModelProvider(
-            this, LoginViewModelFactory(
-                googleDriveAuthenticator
-            )
-        ).get(LoginViewModel::class.java)
-
+        googleDriveAuthenticator?.authenticationResultListener = this
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -101,10 +99,16 @@ class MainActivity : AppCompatActivity(), AuthenticationListener {
         )
     }
 
-    fun login() {
+    override fun login() {
+        googleDriveAuthenticator?.auth()
     }
 
-    fun logout() {
+    override fun logout() {
+        googleDriveAuthenticator?.logout()
+    }
+
+    override fun checkAuthenticationStatus() {
+        googleDriveAuthenticator?.checkLoginStatus()
     }
 
 }

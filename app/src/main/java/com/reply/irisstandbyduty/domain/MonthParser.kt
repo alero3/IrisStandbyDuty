@@ -1,9 +1,11 @@
 package com.reply.irisstandbyduty.domain
 
+import javax.inject.Inject
+
 /**
  * Created by Reply on 03/09/21.
  */
-class MonthParser {
+class MonthParser @Inject constructor() {
 
     /**
      * @param input month in format "MonthName"-"YY". e.g. "September-21"

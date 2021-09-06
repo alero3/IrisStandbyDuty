@@ -7,7 +7,7 @@ import com.reply.irisstandbyduty.domain.service.sheets.ReadSheetCallback
 import com.reply.irisstandbyduty.domain.service.sheets.SheetsReader
 import com.reply.irisstandbyduty.model.StandbyDutyMonth
 import com.reply.irisstandbyduty.result.Result
-import kotlinx.coroutines.CoroutineDispatcher
+import com.reply.irisstandbyduty.shared.DispatcherProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
@@ -15,16 +15,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
 import java.lang.Exception
+import javax.inject.Inject
 
 /**
  * Created by Reply on 04/09/21.
  */
-class LoadOnCallCalendarUseCase constructor(
+class LoadOnCallCalendarUseCase @Inject constructor(
     private val calendarParser: StandbyDutyCalendarParser,
     private val sheetsReader: SheetsReader,
-    coroutineDispatcher: CoroutineDispatcher
+    dispatcherProvider: DispatcherProvider
 ) : FlowUseCase<LoadOnCallCalendarUseCase.Input, StandbyDutyMonth>(
-    coroutineDispatcher
+    dispatcherProvider.io()
 ) {
 
     data class Input(

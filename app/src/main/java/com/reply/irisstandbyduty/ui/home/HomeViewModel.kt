@@ -14,11 +14,14 @@ import timber.log.Timber
 import java.lang.Exception
 import com.reply.irisstandbyduty.result.Result
 import com.reply.irisstandbyduty.util.DateUtils
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
 
-class HomeViewModel(
+@HiltViewModel
+class HomeViewModel @Inject constructor(
     private val loadOnCallCalendarUseCase: LoadOnCallCalendarUseCase
 ) : ViewModel() {
 
